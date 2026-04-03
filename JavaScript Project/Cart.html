@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Main Page</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    .navbar-custom { 
+      background-color: #860909; 
+    }
+    
+    .nav-link-segoe { 
+      font-family: 'Segoe UI'; 
+    }
+
+    img.img-thumbnail { 
+      width: 50px; 
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg mb-3 fixed-top navbar-custom" data-bs-theme="dark">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" title="ნავიგაციის გადართვა">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-link active nav-link-home" href="MainPage.html" title="მთავარი გვერდი">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+              <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+            </svg>
+          </a>
+        </div>
+        <div class="navbar-nav ms-auto text-light">Sandro's Project</div>
+        <div class="navbar-nav ms-auto">
+          <a class="nav-link active" href="cart.html" title="კალათა">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-cart2" viewBox="0 0 16 16">
+              <path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5M3.14 5l1.25 5h8.22l1.25-5zM5 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0m9-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0"/>
+            </svg>
+            <span class="badge bg-danger" id="quantity"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<div class="container mt-5 pt-5 pt-md-5">
+  <table class="table table-striped table-hover" id="cartTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>სახელი</th>
+        <th>ფასი</th>
+        <th>რაოდენობა</th>
+        <th>წაშლა</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot class="table-group-divider">
+      <tr class="table-active fw-bold">
+        <td colspan="2" class="text-end">ჯამი:</td>
+        <td colspan="2" id="grandTotal" class="text-danger">0 ₾</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<script>
+
+  function loadQuantity() {
+    return fetch("https://restaurant.stepprojects.ge/api/Baskets/GetAll")
+      .then(res => res.json())
+      .then(data => {
+        var total = data.reduce((s, i) => s + (i.quantity), 0);
+        document.getElementById("quantity").textContent = total;
+        return data;
+      });
+  }
+
+  function showTotal() {
+    let total = 0;
+    document.querySelectorAll('#cartTable tbody tr').forEach(row => {
+      var txt = row.querySelector('.price-cell span')?.textContent;
+      var num = parseFloat(txt.replace(/ ₾$/, "").replace(",", "."));
+      if (!isNaN(num)) total += num;
+    });
+    document.getElementById("grandTotal").textContent = total + " ₾";
+  }
+
+  function groupApiItems(items) {
+    var grouped = {};
+    items.forEach(item => {
+      var prod = item.product;
+      if (!prod?.id) return;
+      var id = prod.id;
+      if (!grouped[id]) grouped[id] = { product: prod, quantity: 0 };
+      grouped[id].quantity += item.quantity;
+    });
+    return Object.values(grouped);
+  }
+
+  function deleteAllForProduct(productId) {
+    function tryRemoveOne() {
+      return fetch("https://restaurant.stepprojects.ge/api/Baskets/GetAll")
+        .then(r => r.json())
+        .then(items => {
+          var stillHas = items.some(i => i.product?.id === productId && (i.quantity ) > 0);
+          if (!stillHas) return;
+          return fetch(`https://restaurant.stepprojects.ge/api/Baskets/DeleteProduct/${productId}`, {
+            method: "DELETE"
+          }).then(tryRemoveOne);
+        });
+    }
+    return tryRemoveOne();
+  }
+
+  function renderCart(groupedProducts) {
+    var tbody = document.querySelector("#cartTable tbody");
+    tbody.innerHTML = "";
+
+    groupedProducts.forEach((entry, index) => {
+      var prod = entry.product;
+      var qty = entry.quantity;
+      var unitPrice = prod.price;
+
+      var tr = document.createElement("tr");
+
+      var td1 = document.createElement("td"); 
+      td1.textContent = index + 1;
+      td1.className = "align-middle";
+
+      var td2 = document.createElement("td");
+      td2.textContent = prod.name;
+      var img = document.createElement("img");
+      img.src = prod.image;
+      img.className = "img-thumbnail rounded-5 ms-3";
+      td2.appendChild(img);
+
+      var td3 = document.createElement("td");
+      td3.className = "fw-bold text-danger price-cell align-middle";
+      var priceSpan = document.createElement("span");
+      priceSpan.textContent = (unitPrice * qty) + " ₾";
+      td3.appendChild(priceSpan);
+
+      var td4 = document.createElement("td");
+      td4.className = "align-middle";
+      var controls = document.createElement("div");
+      controls.className = "d-flex align-items-center gap-3 align-middle";
+
+      var btnMinus = document.createElement("button");
+      btnMinus.className = "btn btn-outline-secondary btn-sm";
+      btnMinus.textContent = "-";
+      if (qty <= 1) btnMinus.disabled = true;
+
+      var num = document.createElement("span");
+      num.className = "fw-bold fs-5";
+      num.textContent = qty;
+
+      var btnPlus = document.createElement("button");
+      btnPlus.className = "btn btn-outline-secondary btn-sm";
+      btnPlus.textContent = "+";
+
+      controls.append(btnMinus, num, btnPlus);
+      td4.appendChild(controls);
+
+      var td5 = document.createElement("td");
+      td5.className = "align-middle";
+
+      var btnDel = document.createElement("button");
+      btnDel.className = "btn btn-outline-danger btn-sm";
+      btnDel.innerHTML = '<i class="bi bi-trash fs-5"></i>';
+
+      var refresh = () =>
+        fetch("https://restaurant.stepprojects.ge/api/Baskets/GetAll")
+          .then(r => r.json())
+          .then(items => {
+            renderCart(groupApiItems(items));
+            var total = items.reduce((s, i) => s + (i.quantity), 0);
+            document.getElementById("quantity").textContent = total;
+          });
+
+      btnPlus.onclick = () =>
+        fetch("https://restaurant.stepprojects.ge/api/Baskets/AddToBasket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId: prod.id, quantity: 1, price: unitPrice })
+        }).then(refresh);
+
+      btnMinus.onclick = () =>
+        fetch(`https://restaurant.stepprojects.ge/api/Baskets/DeleteProduct/${prod.id}`, { method: "DELETE" })
+          .then(refresh);
+
+      btnDel.onclick = () =>
+        deleteAllForProduct(prod.id).then(refresh);
+
+      td5.appendChild(btnDel);
+
+      tr.append(td1, td2, td3, td4, td5);
+      tbody.appendChild(tr);
+    });
+
+    showTotal();
+  }
+
+  fetch("https://restaurant.stepprojects.ge/api/Baskets/GetAll")
+    .then(res => res.json())
+    .then(items => {
+      renderCart(groupApiItems(items));
+      var total = items.reduce((s, i) => s + (i.quantity), 0);
+      document.getElementById("quantity").textContent = total;
+    });
+</script>
+</body>
+</html>
