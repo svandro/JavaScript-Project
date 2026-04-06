@@ -72,21 +72,10 @@
 </div>
 
 <script>
-
-  function loadQuantity() {
-    return fetch("https://restaurant.stepprojects.ge/api/Baskets/GetAll")
-      .then(res => res.json())
-      .then(data => {
-        var total = data.reduce((s, i) => s + (i.quantity), 0);
-        document.getElementById("quantity").textContent = total;
-        return data;
-      });
-  }
-
   function showTotal() {
     let total = 0;
     document.querySelectorAll('#cartTable tbody tr').forEach(row => {
-      var txt = row.querySelector('.price-cell span')?.textContent;
+      var txt = row.querySelector('.price-cell span').textContent;
       var num = parseFloat(txt.replace(/ ₾$/, "").replace(",", "."));
       if (!isNaN(num)) total += num;
     });
@@ -97,9 +86,8 @@
     var grouped = {};
     items.forEach(item => {
       var prod = item.product;
-      if (!prod?.id) return;
       var id = prod.id;
-      if (!grouped[id]) grouped[id] = { product: prod, quantity: 0 };
+      if (!grouped[id]) grouped[id] = { product: prod, quantity: 0};
       grouped[id].quantity += item.quantity;
     });
     return Object.values(grouped);
@@ -110,7 +98,7 @@
       return fetch("https://restaurant.stepprojects.ge/api/Baskets/GetAll")
         .then(r => r.json())
         .then(items => {
-          var stillHas = items.some(i => i.product?.id === productId && (i.quantity ) > 0);
+          var stillHas = items.some(i => i.product.id === productId && (i.quantity ) > 0);
           if (!stillHas) return;
           return fetch(`https://restaurant.stepprojects.ge/api/Baskets/DeleteProduct/${productId}`, {
             method: "DELETE"
