@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+        background-color: #860909;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .auth-card {
+        background: #fff;
+        width: 100%;
+        max-width: 400px;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
+    }
+
+    .auth-card h2 {
+        color: #860909;
+        margin-bottom: 25px;
+        text-align: center;
+        font-size: 28px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #860909;
+    }
+
+    .btn-submit {
+        width: 100%;
+        background: #860909;
+        color: #fff;
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: opacity 0.3s;
+    }
+
+    .btn-submit:hover {
+        opacity: 0.9;
+    }
+
+    .card-footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .card-footer a {
+        color: blue;
+        text-decoration: none;
+        font-weight: 600;
+    }
+</style>
+
+<body>
+
+    <div class="auth-card">
+        <h2>Sign In</h2>
+        <form onsubmit="signin(event)">
+            <input type="tel" id="tel" placeholder="Phone Number" class="form-control" required>
+            <input type="password" id="password" placeholder="Password" class="form-control" required>
+
+            <button type="submit" class="btn-submit">Sign in</button>
+        </form>
+
+        <div class="card-footer">
+            <p>არ გაქვს ანგარიში? <a href="signup.html">რეგისტრაცია</a></p>
+        </div>
+    </div>
+
+    <script>
+        function signin(event) {
+            event.preventDefault();
+
+            const tel = document.getElementById("tel").value;
+            const password = document.getElementById("password").value;
+
+            axios.post("https://rentcar.stepprojects.ge/api/Users/login", {
+                "password": password,
+                "phoneNumber": tel,
+            })
+                .then(function (response) {
+                    const token = response.data.token;
+
+                    localStorage.setItem("authToken", token);
+                    localStorage.setItem("phoneNumber", response.data.phoneNumber)
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'წარმატება',
+                        text: 'ავტორიზაცია წარმატებულია!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = "MainPage.html";
+                    });
+                })
+                .catch (err => {
+                        console.error(err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'შეცდომა',
+                            text: 'მონაცემები არასწორია',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                    });
+        }
+    </script>
+</body>
+
+</html>
