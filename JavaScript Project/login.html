@@ -107,15 +107,15 @@
         function signin(event) {
             event.preventDefault();
 
-            const tel = document.getElementById("tel").value;
-            const password = document.getElementById("password").value;
+            var tel = document.getElementById("tel").value;
+            var password = document.getElementById("password").value;
 
             axios.post("https://rentcar.stepprojects.ge/api/Users/login", {
                 "password": password,
                 "phoneNumber": tel,
             })
                 .then(function (response) {
-                    const token = response.data.token;
+                    var token = response.data.token;
 
                     localStorage.setItem("authToken", token);
                     localStorage.setItem("phoneNumber", response.data.phoneNumber)
